@@ -1,4 +1,4 @@
-package com.investmetic.global.util.stibee.dto.object;
+package com.investmetic.global.util.stibee.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;

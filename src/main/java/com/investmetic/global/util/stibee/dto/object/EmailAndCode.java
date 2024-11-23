@@ -1,8 +1,11 @@
-package com.investmetic.global.util.stibee.dto;
+package com.investmetic.global.util.stibee.dto.object;
 
-import lombok.Data;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@Data
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EmailAndCode {
 
     // 이메일

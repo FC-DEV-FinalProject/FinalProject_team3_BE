@@ -1,16 +1,13 @@
 package com.investmetic.global.util.stibee.dto.request;
 
-import com.investmetic.global.util.stibee.dto.object.SubscriberField;
 import java.util.List;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.ToString;
 
 /**
  * 스티비 회원 등록시에 사용될 클래스
  */
 @Getter
-@ToString
 public class EmailSubscribe {
 
     /*

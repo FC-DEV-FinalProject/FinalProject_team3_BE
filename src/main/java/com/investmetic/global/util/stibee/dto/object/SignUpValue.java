@@ -2,9 +2,12 @@ package com.investmetic.global.util.stibee.dto.object;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
-import lombok.Data;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@Data
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SignUpValue {
     private List<Detail> failDuplicatedEmail;
     private List<Detail> failDuplicatedPhone;
@@ -19,7 +22,8 @@ public class SignUpValue {
     private List<Detail> success;
     private List<Detail> update;
 
-    @Data
+    @Getter
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)
     public static class Detail {
         @JsonProperty("$createdTime")
         private String createdTime;
@@ -34,6 +38,7 @@ public class SignUpValue {
         private String type;
 
         private String email;
+
         private String name;
 
         @JsonProperty("stb_ad_agreement")

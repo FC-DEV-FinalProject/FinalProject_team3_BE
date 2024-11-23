@@ -1,6 +1,5 @@
 package com.investmetic.domain.user.controller;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -17,20 +16,15 @@ import com.investmetic.domain.user.model.Role;
 import com.investmetic.domain.user.model.UserState;
 import com.investmetic.domain.user.model.entity.User;
 import com.investmetic.domain.user.repository.UserRepository;
-import com.investmetic.global.config.S3MockConfig;
-import io.findify.s3mock.S3Mock;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -42,7 +36,6 @@ import org.springframework.util.MultiValueMap;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-@Import(S3MockConfig.class)
 class UserMyPageControllerTest {
 
     private static final String BUCKET_NAME = "fastcampus-team3";
@@ -127,46 +120,12 @@ class UserMyPageControllerTest {
                 new ByteArrayInputStream("IMG-3925".getBytes(StandardCharsets.UTF_8)), objectMetadata));
     }
 
+    /**
+     * 이미지 변경시 delete 수행 test는 하지 않도록 합니다. - api요청이 직접 가기 때문에.
+     * */
     @Nested
     @DisplayName("개인 정보 수정")
     class userUpdate {
-
-        @BeforeAll
-        static void setUp(@Autowired S3Mock s3Mock, @Autowired AmazonS3 amazonS3) {
-            s3Mock.start();
-            amazonS3.createBucket(BUCKET_NAME);
-        }
-
-        @AfterAll
-        static void tearDown(@Autowired S3Mock s3Mock, @Autowired AmazonS3 amazonS3) {
-            amazonS3.shutdown();
-            s3Mock.stop();
-        }
-
-
-        @Test
-        @DisplayName("개인 정보 수정 정상 동작 - 이미지 변경 시")
-        void updateUserInfo1() throws Exception {
-
-            // DB에 User 생성.
-            createOneUser();
-
-            oneUserImageUpload();
-
-            UserModifyDto userModifyDto = UserModifyDto.builder().email("jlwoo092513@gmail.com")
-                    .imageDto(new ImageMetadata("test.jpg", "image/jpg", 1024 * 1024)).nickname("테스트")
-                    .infoAgreement(Boolean.TRUE).password("asdf").phone("01012345678")
-                    .imageChange(Boolean.TRUE) // primitive 타입으로
-                    .build();
-
-            ResultActions resultActions = mockMvc.perform(
-                    patch("/api/users/mypage/profile").contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(userModifyDto)));
-
-            resultActions.andExpect(status().isOk())
-                    .andExpect(jsonPath("$.result", containsString(userModifyDto.getImageDto().getImageName())))
-                    .andDo(print());
-        }
 
         @Test
         @DisplayName("개인 정보 수정 정상 동작 - 이미지 미변경 시")
@@ -224,7 +183,5 @@ class UserMyPageControllerTest {
             resultActions.andExpect(status().isBadRequest()).andExpect(jsonPath("$.message").value("잘못된 입력 값"))
                     .andDo(print());
         }
-
-
     }
 }

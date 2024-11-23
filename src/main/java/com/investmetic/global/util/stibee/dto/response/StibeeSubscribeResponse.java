@@ -1,12 +1,13 @@
 package com.investmetic.global.util.stibee.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.Data;
-import lombok.ToString;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 
-@Data
-@ToString
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class StibeeSubscribeResponse<T> {
     @JsonProperty("Ok")
     private boolean ok;
@@ -17,12 +18,11 @@ public class StibeeSubscribeResponse<T> {
     @JsonProperty("Value")
     private T value;
 
-    @Data
+    @Getter
+    @NoArgsConstructor(access = AccessLevel.PROTECTED)
     public static class StibeeError {
         private String code;
         private int httpStatusCode;
         private String message;
     }
-
-
 }

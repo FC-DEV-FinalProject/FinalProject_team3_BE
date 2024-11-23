@@ -1,9 +1,12 @@
 package com.investmetic.global.util.stibee.dto.object;
 
 import java.util.List;
-import lombok.Data;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@Data
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UnsubscribeValue {
 
     //구독자 수신거부 성공 리스트

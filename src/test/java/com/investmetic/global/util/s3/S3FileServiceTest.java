@@ -36,8 +36,6 @@ class S3FileServiceTest {
         //객체 URL 획득
         String s3Path = s3FileService.getS3Path(FilePath.STRATEGY_IMAGE, fileName, size);
 
-        System.out.println(s3Path);
-
         assertTrue(s3Path.contains(FilePath.STRATEGY_IMAGE.getPath()));
         assertTrue(s3Path.contains(fileName));
     }
@@ -70,20 +68,6 @@ class S3FileServiceTest {
     }
 
     @Test
-    @DisplayName("substring Test")
-    void substringTest() {
-        String successKey = "strategy/image/testImage.jpg";
-        String s3Path = "https://jrw-toyproject-imgs.s3.ap-northeast-2.amazonaws.com/strategy/image/testImage.jpg";
-
-        String s3Key = s3Path.substring(s3Path.lastIndexOf(".com/") + 5);
-        System.out.println(s3Key);
-        System.out.println(successKey);
-
-        assertTrue(s3Key.equals(successKey));
-
-    }
-
-    @Test
     @DisplayName("정상 엑셀 확장자랑 사이즈 판별")
     void passExcelCase() {
 
@@ -92,7 +76,6 @@ class S3FileServiceTest {
 
         //객체 URL 획득
         String s3Path = s3FileService.getS3Path(FilePath.STRATEGY_EXCEL, fileName, size);
-        System.out.println("s3Path = " + s3Path);
 
         assertTrue(s3Path.contains(FilePath.STRATEGY_EXCEL.getPath()));
 
@@ -108,8 +91,6 @@ class S3FileServiceTest {
 
         String s3Path = s3FileService.getS3Path(FilePath.NOTICE, fileName, size);
 
-        System.out.println("s3Path = " + s3Path);
-
         assertTrue(s3Path.contains(FilePath.NOTICE.getPath()));
         assertTrue(s3Path.contains(fileName));
     }
@@ -122,8 +103,6 @@ class S3FileServiceTest {
         int size = 1024 * 1024; // 1MB
 
         String s3Path = s3FileService.getS3Path(FilePath.NOTICE, fileName, size);
-
-        System.out.println("s3Path = " + s3Path);
 
         assertTrue(s3Path.contains(FilePath.NOTICE.getPath()));
         assertTrue(s3Path.contains(fileName));

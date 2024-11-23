@@ -1,7 +1,7 @@
 package com.investmetic.global.util.stibee.client;
 
 
-import com.investmetic.global.util.stibee.dto.EmailAndCode;
+import com.investmetic.global.util.stibee.dto.object.EmailAndCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.service.annotation.HttpExchange;
