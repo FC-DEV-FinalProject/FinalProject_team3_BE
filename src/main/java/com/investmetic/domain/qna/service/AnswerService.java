@@ -54,7 +54,7 @@ public class AnswerService {
      */
     public void deleteTraderAnswer(Long answerId, Long questionId, Long traderId) {
         Question question = findQuestionById(questionId);
-        Answer answer = findAnswerById(answerId);
+        Answer answer = validateAndGetAnswer(answerId, question);
 
         // 권한 검증
         validateTraderAuthorization(question, traderId);
@@ -75,7 +75,7 @@ public class AnswerService {
      */
     public void deleteAdminAnswer(Long answerId, Long questionId) {
         Question question = findQuestionById(questionId);
-        Answer answer = findAnswerById(answerId);
+        Answer answer = validateAndGetAnswer(answerId, question);
 
         // 연관 관계 제거
         question.removeAnswer();
@@ -119,6 +119,21 @@ public class AnswerService {
         }
     }
 
+
+    /**
+     * 답변 확인 및 예외 처리
+     *
+     * @param answerId 답변 ID
+     * @param question 답변이 속한 문의
+     * @return 답변 엔티티
+     */
+    private Answer validateAndGetAnswer(Long answerId, Question question) {
+        Answer answer = question.getAnswer();
+        if (answer == null || !answer.getAnswerId().equals(answerId)) {
+            throw new BusinessException(ErrorCode.ANSWER_NOT_FOUND);
+        }
+        return answer;
+    }
 
     /**
      * 문의 조회
