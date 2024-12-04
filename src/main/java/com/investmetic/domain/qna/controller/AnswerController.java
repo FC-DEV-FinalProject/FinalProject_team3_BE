@@ -42,7 +42,7 @@ public class AnswerController {
 
     //문의 답변 삭제 (트레이더)
     @PreAuthorize("hasRole('ROLE_TRADER')")
-    @Operation(summary = "문의 답변 삭제", description = "<a href='https://field-sting-eff.notion.site/7d8679f1a17846a3bd1ce2f8aca1a306?pvs=4' target='_blank'>API 명세서</a>")
+    @Operation(summary = "문의 답변 삭제", description = "<a href='https://field-sting-eff.notion.site/4947f0c29cea466690b79c743e33efe4?pvs=4'>API 명세서</a>")
     @DeleteMapping("/trader/questions/{questionId}/answers/{answerId}")
     public ResponseEntity<BaseResponse<Void>> deleteTraderAnswer(
             @PathVariable Long questionId,
