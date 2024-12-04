@@ -34,5 +34,11 @@ public class Answer extends BaseEntity {
     @Column(length = 5000)
     private String content; // 답변내용
 
+    public static Answer from(Question question, String content) {
+        return Answer.builder()
+                .question(question)
+                .content(content)
+                .build();
+    }
 
 }

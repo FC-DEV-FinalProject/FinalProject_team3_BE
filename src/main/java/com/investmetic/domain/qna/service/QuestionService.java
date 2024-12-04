@@ -10,6 +10,7 @@ import com.investmetic.domain.qna.dto.response.QuestionsResponse;
 import com.investmetic.domain.qna.model.QnaState;
 import com.investmetic.domain.qna.model.entity.Answer;
 import com.investmetic.domain.qna.model.entity.Question;
+import com.investmetic.domain.qna.repository.AnswerRepository;
 import com.investmetic.domain.qna.repository.QuestionRepository;
 import com.investmetic.domain.strategy.model.entity.Strategy;
 import com.investmetic.domain.strategy.repository.StrategyRepository;
@@ -38,6 +39,7 @@ public class QuestionService {
     private final UserRepository userRepository;
     private final StrategyRepository strategyRepository;
     private final JPAQueryFactory queryFactory;
+    private final AnswerRepository answerRepository;
 
     /**
      * 문의 등록
@@ -60,6 +62,11 @@ public class QuestionService {
         Question question = findQuestionById(questionId);
         User user = findUserById(userId);
         validateAccess(user, question, userId);
+        // 답변 삭제
+        Answer answer = question.getAnswer();
+        if (answer != null) {
+            answerRepository.delete(answer); // 답변 삭제
+        }
         questionRepository.delete(question);
     }
 
@@ -192,6 +199,14 @@ public class QuestionService {
     private Question findQuestionById(Long questionId) {
         return questionRepository.findById(questionId)
                 .orElseThrow(() -> new BusinessException(ErrorCode.QUESTION_NOT_FOUND));
+    }
+
+    /**
+     * 답변 조회 및 예외 처리
+     */
+    private Answer findAnswerById(Long answerId) {
+        return answerRepository.findById(answerId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.ANSWER_NOT_FOUND));
     }
 
     /**

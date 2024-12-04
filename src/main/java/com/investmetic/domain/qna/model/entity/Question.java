@@ -65,11 +65,16 @@ public class Question extends BaseEntity {
                 .build();
     }
 
+    // 답변 제거 메서드
+    public void removeAnswer() {
+        this.answer = null;
+    }
 
     public void updateQnaState(QnaState newState) {
         if (this.qnaState != newState) {
             this.qnaState = newState;
         }
+
 
     }
 }

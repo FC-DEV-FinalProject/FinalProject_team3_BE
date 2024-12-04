@@ -59,6 +59,10 @@ public class AnswerService {
         // 권한 검증
         validateTraderAuthorization(question, traderId);
 
+        // 연관 관계 제거
+        question.removeAnswer();
+        questionRepository.save(question); // 상태 변경 저장
+
         // 답변 삭제
         deleteAnswer(answer, question);
     }
@@ -72,6 +76,12 @@ public class AnswerService {
     public void deleteAdminAnswer(Long answerId, Long questionId) {
         Question question = findQuestionById(questionId);
         Answer answer = findAnswerById(answerId);
+
+
+
+        // 연관 관계 제거
+        question.removeAnswer();
+        questionRepository.save(question); // 상태 변경 저장
 
         // 답변 삭제
         deleteAnswer(answer, question);
@@ -110,6 +120,7 @@ public class AnswerService {
             throw new BusinessException(ErrorCode.FORBIDDEN_ACCESS);
         }
     }
+
 
     /**
      * 문의 조회
