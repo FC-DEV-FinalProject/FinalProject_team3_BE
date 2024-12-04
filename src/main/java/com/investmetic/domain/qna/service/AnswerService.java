@@ -77,8 +77,6 @@ public class AnswerService {
         Question question = findQuestionById(questionId);
         Answer answer = findAnswerById(answerId);
 
-
-
         // 연관 관계 제거
         question.removeAnswer();
         questionRepository.save(question); // 상태 변경 저장
