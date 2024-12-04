@@ -60,6 +60,7 @@ public class QuestionService {
     @Transactional
     public void deleteQuestion(Long strategyId, Long questionId, Long userId) {
         Question question = findQuestionById(questionId);
+        Strategy strategy = findStrategyById(strategyId);
         User user = findUserById(userId);
         validateAccess(user, question, userId);
         // 답변 삭제
@@ -146,16 +147,16 @@ public class QuestionService {
 
         if (Role.isInvestor(role)) {
             // 투자자: 트레이더 정보 반환
-            profileImageUrl = question.getUser().getImageUrl(); // 트레이더 이미지
-            nickname = question.getUser().getNickname();       // 트레이더 닉네임
+            profileImageUrl = question.getUser().getImageUrl(); // 투자자 이미지
+            nickname = question.getUser().getNickname();       // 투자자 닉네임
         } else if (Role.isTrader(role)) {
             // 트레이더: 투자자 정보 반환
-            profileImageUrl = question.getStrategy().getUser().getImageUrl();              // 투자자 이미지
-            nickname = question.getStrategy().getUser().getNickname();                    // 투자자 닉네임
+            profileImageUrl = question.getStrategy().getUser().getImageUrl();              // 트레이더 이미지
+            nickname = question.getStrategy().getUser().getNickname();                    // 트레이더 닉네임
         } else {
             // 관리자: 기본 정보 반환
-            profileImageUrl = question.getUser().getImageUrl();              // 투자자 이미지
-            nickname = question.getUser().getNickname();                    // 투자자 닉네임
+            profileImageUrl = question.getUser().getImageUrl();              // 관리자 이미지
+            nickname = question.getUser().getNickname();                    // 관리자 닉네임
         }
 
         return QuestionsDetailResponse.builder()
