@@ -33,4 +33,10 @@ public class NoticeFile extends BaseEntity {
 
     private String fileUrl; // s3 공지사항 파일 주소
 
+
+    public NoticeFile(Notice notice, String fileUrl, String fileName) {
+        this.notice = notice;
+        this.fileUrl = fileUrl;
+        this.fileName = fileName;
+    }
 }

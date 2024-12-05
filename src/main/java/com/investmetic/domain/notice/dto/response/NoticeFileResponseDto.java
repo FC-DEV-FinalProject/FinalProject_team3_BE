@@ -5,11 +5,12 @@ import lombok.Getter;
 
 @Getter
 public class NoticeFileResponseDto {
-    private Long Notice_File_Id;
+    private Long noticeFileId;
     private String fileName;
     @QueryProjection
-    public NoticeFileResponseDto(Long Notice_File_Id, String fileName) {
-        this.Notice_File_Id = Notice_File_Id;
+    public NoticeFileResponseDto(Long noticeFileId, String fileName) {
+        this.noticeFileId = noticeFileId;
         this.fileName = fileName;
     }
+
 }
