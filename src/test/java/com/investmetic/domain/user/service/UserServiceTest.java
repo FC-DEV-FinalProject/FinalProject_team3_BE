@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.investmetic.domain.user.dto.request.UserModifyDto;
 import com.investmetic.domain.user.dto.request.UserSignUpDto;
 import com.investmetic.domain.user.dto.response.AvaliableDto;
 import com.investmetic.domain.user.dto.response.FoundEmailDto;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
@@ -32,6 +34,10 @@ class UserServiceTest {
     private UserRepository userRepository;
     @Autowired
     private RedisUtil redisUtil;
+    @Autowired
+    private UserMyPageService userMyPageService;
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     private User createOneUser() {
         User user = User.builder()
@@ -169,6 +175,26 @@ class UserServiceTest {
         FoundEmailDto result = userService.findEmailByPhone(phone);
 
         assertFalse(result.getIsFound());
+    }
+
+    @Test
+    @DisplayName("비밀번호 재설정")
+    void resetPassword1() {
+        User user = createOneUser();
+        String newPassword = "newpassword"; // 기존 비밀번호와 동일하게 설정
+
+        // UserModifyDto 생성
+        UserModifyDto userModifyDto = UserModifyDto.builder()
+                .email(user.getEmail()) // 필요한 이메일 세팅
+                .password(newPassword) // 기존 비밀번호와 동일한 새 비밀번호
+                .build();
+
+        User updatedUser = userRepository.findByEmail(user.getEmail())
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_INFO_NOT_FOUND));
+
+        userMyPageService.resetPassword(userModifyDto, userModifyDto.getEmail());
+        assertTrue(passwordEncoder.matches(newPassword, updatedUser.getPassword())); //비밀번호 재설정 됐는지 확인
+        assertFalse(passwordEncoder.matches(user.getPassword(), updatedUser.getPassword())); //기존 비밀번호와 비교
     }
 
 }

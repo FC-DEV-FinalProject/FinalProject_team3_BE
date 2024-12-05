@@ -12,7 +12,7 @@ import org.springframework.web.service.annotation.PostExchange;
 public interface AutoApiStibeeClient {
 
     @PostExchange("/NmEwMmU2ZTItNzU2Ni00MzNhLWJkODktNzAzMjljOTQ2Mjhl")
-    void sendAuthenticationCode(@RequestBody EmailAndCode emailAndCode);
+    String sendAuthenticationCode(@RequestBody EmailAndCode emailAndCode);
 
 
     @PostExchange("/NWMwN2QyMjUtOGUyNy00ZGRkLWJiZjItNWFhYTMzMmFlYTI5")

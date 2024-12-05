@@ -32,10 +32,12 @@ public class AccountVerificationService {
     @Transactional
     public MultiPresignedUrlResponseDto registerStrategyAccountImages(
             Long strategyId,
-            List<AccountImageRequestDto> requestDtoList) {
+            List<AccountImageRequestDto> requestDtoList,
+            Long userId) {
         // 트레이더 정보 확인
-        Strategy strategy = strategyRepository.findById(strategyId)
-                .orElseThrow(() -> new BusinessException(ErrorCode.STRATEGY_NOT_FOUND));
+        Strategy strategy = findStrategyById(strategyId);
+
+        verifyUserPermission(strategy, userId);
 
         // 결과를 담을 리스트 생성
         List<PresignedUrlResponseDto> presignedUrlList = new ArrayList<>();
@@ -74,34 +76,43 @@ public class AccountVerificationService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponseDto<AccountImagesResponseDto> getAccountImagesByStrategyId(Long strategyId, Pageable pageable) {
+    public PageResponseDto<AccountImagesResponseDto> getAccountImagesByStrategyId(Long strategyId, Pageable pageable,
+                                                                                  Long userId) {
+        Strategy strategy = findStrategyById(strategyId);
+
+        verifyUserPermission(strategy, userId);
+
         return new PageResponseDto<>(accountVerificationRepository.findByStrategyId(strategyId, pageable)
                 .map(AccountImagesResponseDto::from));
     }
 
     @Transactional
-    public void deleteStrategyAccountImages(Long strategyId, List<Long> requestDtoList) {
+    public void deleteStrategyAccountImages(Long strategyId, List<Long> requestDtoList, Long userId) {
         for (Long requestDtoId : requestDtoList) {
-            Optional<AccountVerification> targetImage = accountVerificationRepository.findById(requestDtoId);
-
-            // 삭제 요청한 이미지가 존재하지 않을 경우
-            if (targetImage.isEmpty()) {
-                throw new BusinessException(ErrorCode.ACCOUNT_IMAGE_NOT_FOUND);
-            }
+            AccountVerification targetImage = accountVerificationRepository.findById(requestDtoId).orElseThrow(() ->
+                    new BusinessException(ErrorCode.ACCOUNT_IMAGE_NOT_FOUND));
 
             // 해당 실계좌 인증 이미지의 전략아이디가 요청한 전략아이디와 일치하지 않을경우
-            if (!Objects.equals(targetImage.get().getStrategy().getStrategyId(), strategyId)) {
+            if (!Objects.equals(targetImage.getStrategy().getStrategyId(), strategyId)) {
                 throw new BusinessException(ErrorCode.ENTITY_NOT_FOUND);
             }
 
-            AccountVerification imageEntity = targetImage.get();
+            Strategy strategy = findStrategyById(targetImage.getStrategy().getStrategyId());
 
-            // FIXME: User 구현 후 수정 예정
-//            if (imageEntity.getCreatedBy() != user) {
-//                throw new BusinessException(ErrorCode.FORBIDDEN_ACCESS);
-//            }
+            verifyUserPermission(strategy, userId);
 
-            accountVerificationRepository.delete(imageEntity);
+            accountVerificationRepository.delete(targetImage);
         }
+    }
+
+    private void verifyUserPermission(Strategy strategy, Long userId) {
+        if (!strategy.getUser().getUserId().equals(userId)) {
+            throw new BusinessException(ErrorCode.FORBIDDEN_ACCESS);
+        }
+    }
+
+    private Strategy findStrategyById(Long strategyId) {
+        return strategyRepository.findById(strategyId)
+                .orElseThrow(() -> new BusinessException(ErrorCode.STRATEGY_NOT_FOUND));
     }
 }

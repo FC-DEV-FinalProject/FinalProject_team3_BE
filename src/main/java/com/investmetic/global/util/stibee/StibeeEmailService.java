@@ -11,8 +11,8 @@ import com.investmetic.global.util.stibee.client.StibeeClient;
 import com.investmetic.global.util.stibee.dto.object.DeleteValue;
 import com.investmetic.global.util.stibee.dto.object.EmailAndCode;
 import com.investmetic.global.util.stibee.dto.object.SignUpValue;
-import com.investmetic.global.util.stibee.dto.request.SubscriberField;
 import com.investmetic.global.util.stibee.dto.request.EmailSubscribe;
+import com.investmetic.global.util.stibee.dto.request.SubscriberField;
 import com.investmetic.global.util.stibee.dto.response.StibeeSubscribeResponse;
 import java.util.ArrayList;
 import java.util.List;
@@ -84,7 +84,7 @@ public class StibeeEmailService {
     }
 
     // 임시 주소록에서 회원 삭제시
-    public void deleteTemporalSubscriber(String email){
+    public void deleteTemporalSubscriber(String email) {
 
         StibeeSubscribeResponse<DeleteValue> deleteResponse
                 = stibeeClient.deleteSubscriber(temporalAddressBook, List.of(email));
@@ -92,11 +92,10 @@ public class StibeeEmailService {
 //        log.info("deleteResponse {}",deleteResponse);
 
         // 미삭제시 회원 수동 삭제할 수 있도록.
-        if(!deleteResponse.isOk()){
+        if (!deleteResponse.isOk()) {
             log.error("email not deleted {}", email);
         }
     }
-
 
 
     /**
@@ -191,8 +190,7 @@ public class StibeeEmailService {
 
 
     /**
-     * 이메일 수신 거부 - 주소록에서 수신 거부로 표시됨.
-     *  - 수신 거부 취소할 때 addSubscriber사용하면 됨. 요청에 occuredBy subscriber로 설정하면 수신 거부 취소됨.
+     * 이메일 수신 거부 - 주소록에서 수신 거부로 표시됨. - 수신 거부 취소할 때 addSubscriber사용하면 됨. 요청에 occuredBy subscriber로 설정하면 수신 거부 취소됨.
      */
     public Boolean unsubscribeEmail(String email) {
         return stibeeClient.unsubscribeEmail(defaultAddressBook, List.of(email)).isOk();
@@ -205,13 +203,18 @@ public class StibeeEmailService {
      * @param email - 회원의 Email
      * @param code  - 인증코드.
      */
-    public void sendAuthenticationCode(String email, String code) {
+    public boolean sendAuthenticationCode(String email, String code) {
 
         EmailAndCode emailAndCode = new EmailAndCode(email, code);
 //         성공시 그냥 ok 만 옴
 //         실패시 "구독자 상태를 파악할 수 없습니다.", HttpClientErrorException&BadRequest -> 스티비 안에 해당 이메일이 없음.
 //         response.getBody() -> inputStream
-        autoApiStibeeClient.sendAuthenticationCode(emailAndCode);
+        String response = autoApiStibeeClient.sendAuthenticationCode(emailAndCode);
+        if (!"ok".equals(response)) {
+            throw new BusinessException(ErrorCode.USERS_NOT_FOUND);
+        }
+
+        return true;
     }
 
 

@@ -21,6 +21,7 @@ import com.investmetic.domain.strategy.dto.request.AccountImageRequestDto;
 import com.investmetic.domain.strategy.model.entity.Strategy;
 import com.investmetic.domain.strategy.repository.StrategyRepository;
 import com.investmetic.domain.strategy.repository.TradeTypeRepository;
+import com.investmetic.domain.user.model.entity.User;
 import com.investmetic.domain.user.repository.UserRepository;
 import com.investmetic.global.common.PageResponseDto;
 import com.investmetic.global.dto.MultiPresignedUrlResponseDto;
@@ -67,6 +68,7 @@ class AccountVerificationServiceTest {
     private AccountVerificationService accountVerificationService;
 
     private Strategy strategy;
+    private User user;
     private AccountVerification accountVerification1;
     private AccountVerification accountVerification2;
     private List<AccountImageRequestDto> requestDtoList;
@@ -76,8 +78,16 @@ class AccountVerificationServiceTest {
      */
     @BeforeEach
     void setUp() {
+        user = User.builder()
+                .userId(1L)
+                .userName("testUser")
+                .nickname("Tester")
+                .email("test@example.com")
+                .build();
+
         strategy = Strategy.builder()
                 .strategyId(1L)
+                .user(user)
                 .strategyName("Test Strategy")
                 .build();
 
@@ -108,14 +118,15 @@ class AccountVerificationServiceTest {
      */
     @Test
     void 실계좌_인증_이미지_등록_성공_테스트() {
-        when(strategyRepository.findById(1L)).thenReturn(Optional.of(strategy));
+        when(strategyRepository.findById(strategy.getStrategyId())).thenReturn(Optional.of(strategy));
         when(s3FileService.getS3StrategyPath(eq(FilePath.STRATEGY_IMAGE), anyLong(), anyString(), anyInt()))
                 .thenReturn("s3://bucket/path/to/image");
         when(s3FileService.getPreSignedUrl("s3://bucket/path/to/image"))
                 .thenReturn("https://presigned.url");
 
-        MultiPresignedUrlResponseDto response = accountVerificationService.registerStrategyAccountImages(1L,
-                requestDtoList);
+        MultiPresignedUrlResponseDto response = accountVerificationService.registerStrategyAccountImages(
+                strategy.getStrategyId(),
+                requestDtoList, user.getUserId());
 
         assertThat(response.getPresignedUrls()).hasSize(1);
         assertThat(response.getPresignedUrls().get(0).getPresignedUrl()).isEqualTo("https://presigned.url");
@@ -129,9 +140,11 @@ class AccountVerificationServiceTest {
      */
     @Test
     void 실계좌_인증_이미지_등록_전략_없을_경우() {
-        when(strategyRepository.findById(1L)).thenReturn(Optional.empty());
+        when(strategyRepository.findById(strategy.getStrategyId())).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> accountVerificationService.registerStrategyAccountImages(1L, requestDtoList))
+        assertThatThrownBy(
+                () -> accountVerificationService.registerStrategyAccountImages(strategy.getStrategyId(), requestDtoList,
+                        user.getUserId()))
                 .isInstanceOf(BusinessException.class)
                 .hasMessage(ErrorCode.STRATEGY_NOT_FOUND.getMessage());
 
@@ -142,17 +155,18 @@ class AccountVerificationServiceTest {
     @Test
     void 실계좌_인증_조회_성공_테스트() {
         // Given
-        Long strategyId = 1L;
+        Long strategyId = strategy.getStrategyId();
         Pageable pageable = PageRequest.of(0, 10, Sort.by("id").ascending());
 
         // Mock 설정
         Page<AccountVerification> mockPage = new PageImpl<>(List.of(accountVerification1, accountVerification2),
                 pageable, 2);
+        when(strategyRepository.findById(strategyId)).thenReturn(Optional.of(strategy));
         when(accountVerificationRepository.findByStrategyId(strategyId, pageable)).thenReturn(mockPage);
 
         // When
         PageResponseDto<AccountImagesResponseDto> response = accountVerificationService.getAccountImagesByStrategyId(
-                strategyId, pageable);
+                strategyId, pageable, user.getUserId());
 
         // Then
         assertThat(response).isNotNull();
@@ -175,11 +189,12 @@ class AccountVerificationServiceTest {
 
         // Mock 설정: 빈 페이지 반환
         Page<AccountVerification> emptyPage = new PageImpl<>(List.of(), pageable, 0);
+        when(strategyRepository.findById(strategyId)).thenReturn(Optional.of(strategy));
         when(accountVerificationRepository.findByStrategyId(strategyId, pageable)).thenReturn(emptyPage);
 
         // When
         PageResponseDto<AccountImagesResponseDto> response = accountVerificationService.getAccountImagesByStrategyId(
-                strategyId, pageable);
+                strategyId, pageable, user.getUserId());
 
         // Then
         assertThat(response).isNotNull();
@@ -197,14 +212,15 @@ class AccountVerificationServiceTest {
      */
     @Test
     void 실계좌_인증_이미지_삭제_성공_테스트() {
-        Long strategyId = 1L;
+        Long strategyId = strategy.getStrategyId();
         List<Long> requestDtoList = List.of(1L, 2L);
 
+        when(strategyRepository.findById(strategyId)).thenReturn(Optional.of(strategy));
         when(accountVerificationRepository.findById(1L)).thenReturn(Optional.of(accountVerification1));
         when(accountVerificationRepository.findById(2L)).thenReturn(Optional.of(accountVerification2));
 
         // When
-        accountVerificationService.deleteStrategyAccountImages(strategyId, requestDtoList);
+        accountVerificationService.deleteStrategyAccountImages(strategyId, requestDtoList, user.getUserId());
 
         // Then
         verify(accountVerificationRepository, times(1)).delete(accountVerification1);
@@ -213,7 +229,7 @@ class AccountVerificationServiceTest {
 
     @Test
     void 이미지가_존재하지_않을_경우_삭제_실패() {
-        Long strategyId = 1L;
+        Long strategyId = strategy.getStrategyId();
         List<Long> requestDtoList = List.of(1L);
 
         // Mock repository behavior
@@ -221,7 +237,7 @@ class AccountVerificationServiceTest {
 
         // When & Then
         BusinessException exception = assertThrows(BusinessException.class, () ->
-                accountVerificationService.deleteStrategyAccountImages(strategyId, requestDtoList)
+                accountVerificationService.deleteStrategyAccountImages(strategyId, requestDtoList, user.getUserId())
         );
 
         assertEquals(ErrorCode.ACCOUNT_IMAGE_NOT_FOUND, exception.getErrorCode());
@@ -238,7 +254,7 @@ class AccountVerificationServiceTest {
 
         // When & Then
         BusinessException exception = assertThrows(BusinessException.class, () ->
-                accountVerificationService.deleteStrategyAccountImages(strategyId, requestDtoList)
+                accountVerificationService.deleteStrategyAccountImages(strategyId, requestDtoList, user.getUserId())
         );
 
         assertEquals(ErrorCode.ENTITY_NOT_FOUND, exception.getErrorCode());

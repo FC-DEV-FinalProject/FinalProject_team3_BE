@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "로그인 API")
+@Tag(name = "사용자 기본 API", description = "사용자 관련 기본 기능 API")
 @RestController
 @RequestMapping("/api/users/login")
 public class LoginController {

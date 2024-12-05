@@ -270,5 +270,4 @@ public class UserService {
     private interface ValidationFunction {
         boolean exists(String value);
     }
-
 }

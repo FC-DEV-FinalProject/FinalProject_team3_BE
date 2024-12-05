@@ -65,6 +65,7 @@ public class QuestionController {
      * @return 문의 삭제 성공 응답
      */
     @DeleteMapping("/strategies/{strategyId}/questions/{questionId}")
+    @PreAuthorize("hasRole('ROLE_INVESTOR')")
     public ResponseEntity<BaseResponse<Void>> deleteQuestion(
             @PathVariable Long strategyId,
             @PathVariable Long questionId,
