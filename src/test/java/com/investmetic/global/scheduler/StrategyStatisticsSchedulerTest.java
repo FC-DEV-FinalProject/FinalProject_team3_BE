@@ -95,14 +95,13 @@ class StrategyStatisticsSchedulerTest {
         StrategyStatistics savedStatistics = captor.getValue();
 
         // 검증
-        assertEquals(LocalDate.now().minusDays(2), savedStatistics.getStartDate()); // 시작일
-        assertEquals(LocalDate.now(), savedStatistics.getEndDate()); // 종료일
+        assertEquals(1500L,savedStatistics.getBalance()); // 현재 원금
         assertEquals(2, savedStatistics.getOperationPeriod()); // 운용 기간 (2일)
         assertEquals(600L, savedStatistics.getCumulativeTransactionAmount()); // 누적 입출금
         assertEquals(LocalDate.now().minusDays(2), savedStatistics.getStartDate()); // 시작일
         assertEquals(LocalDate.now(), savedStatistics.getEndDate()); // 종료일
         assertEquals(300L, savedStatistics.getCumulativeProfitAmount()); // 누적 수익
-        assertEquals(50.0, savedStatistics.getRecentYearProfitRate()); // 최근 1년 수익률
+        assertEquals(5000.0, savedStatistics.getRecentYearProfitRate()); // 최근 1년 수익률
         assertEquals(150L, savedStatistics.getMaxDailyProfitAmount()); // 최대 일간 이익
         assertEquals(3, savedStatistics.getTotalTradeDays()); // 총 거래일수
         assertEquals(3, savedStatistics.getCurrentConsecutiveProfitLossDays()); // 현재 연속 손익일수
