@@ -87,7 +87,7 @@ public class StrategyRepositoryCustomImpl implements StrategyRepositoryCustom {
                         user.imageUrl,
                         user.nickname,
                         strategy.minimumInvestmentAmount,
-                        strategyStatistics.principal, // 초기 투자금액은 원금이랑 동일
+                        strategyStatistics.initialInvestment, // 초기 투자금액은 원금이랑 동일
                         strategy.kpRatio,
                         strategy.smScore,
                         strategyStatistics.endDate,
@@ -126,7 +126,7 @@ public class StrategyRepositoryCustomImpl implements StrategyRepositoryCustom {
                         user.imageUrl,
                         user.nickname,
                         strategy.minimumInvestmentAmount,
-                        strategyStatistics.principal,
+                        strategyStatistics.initialInvestment,
                         strategy.kpRatio,
                         strategy.smScore,
                         strategyStatistics.endDate,
@@ -415,7 +415,7 @@ public class StrategyRepositoryCustomImpl implements StrategyRepositoryCustom {
                 .join(strategy.tradeType, tradeType)
                 .join(strategy.user, user)
                 .where(strategy.user.userId.eq(traderId)
-                        ,isApprovedAndPublic())
+                        , isApprovedAndPublic())
                 .orderBy(strategy.strategyId.desc()) // 최신순(id 내림차순) 정렬
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -426,7 +426,7 @@ public class StrategyRepositoryCustomImpl implements StrategyRepositoryCustom {
                 .select(Wildcard.count)
                 .from(strategy)
                 .where(strategy.user.userId.eq(traderId)
-                        ,isApprovedAndPublic());
+                        , isApprovedAndPublic());
 
         // 만약 페이지의 처음이나, 끝일때, 전체 데이터 크기가 pageSize보다 작은 경우 COUNT 쿼리가 실행되지 않음
         // 그 외 경우에만 fetchOne() 을 실행하여 전체 데이터 개수를 계산

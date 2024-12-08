@@ -90,6 +90,8 @@ public class StrategyStatistics extends BaseTimeEntity {
 
     private Integer winRateRank; // 승률 순위 (방어형 전략 알고리즘 필요)
 
+    private Long initialInvestment; // 최초 투자금액
+
     @Builder
     public StrategyStatistics(Long strategyStatisticsId, Long balance, Integer operationPeriod,
                               Long cumulativeTransactionAmount, LocalDate startDate,
@@ -104,7 +106,7 @@ public class StrategyStatistics extends BaseTimeEntity {
                               Integer currentConsecutiveProfitLossDays, Integer totalProfitableDays,
                               Integer maxConsecutiveProfitDays, Integer totalLossDays, Integer maxConsecutiveLossDays,
                               Double winRate, Integer totalTradeDays, Double dailyProfitLossStdDev,
-                              Integer mddRank, Integer stdDevRank, Integer winRateRank) {
+                              Integer mddRank, Integer stdDevRank, Integer winRateRank, Long initialInvestment) {
         this.strategyStatisticsId = strategyStatisticsId;
         this.balance = balance;
         this.operationPeriod = operationPeriod;
@@ -141,6 +143,7 @@ public class StrategyStatistics extends BaseTimeEntity {
         this.mddRank = mddRank;
         this.stdDevRank = stdDevRank;
         this.winRateRank = winRateRank;
+        this.initialInvestment = initialInvestment;
     }
 
     public void updateExistingStatistics(StrategyStatistics updated) {
@@ -173,5 +176,6 @@ public class StrategyStatistics extends BaseTimeEntity {
         this.winRate = updated.getWinRate();
         this.totalTradeDays = updated.getTotalTradeDays();
         this.dailyProfitLossStdDev = updated.getDailyProfitLossStdDev();
+        this.initialInvestment = updated.initialInvestment;
     }
 }

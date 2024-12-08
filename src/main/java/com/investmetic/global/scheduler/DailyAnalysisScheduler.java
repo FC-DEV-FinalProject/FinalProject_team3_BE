@@ -137,7 +137,7 @@ public class DailyAnalysisScheduler {
                     .maxDailyLoss(maxDailyLoss)
                     .dailyProfitLossRate(RoundUtil.roundToFifth(dailyProfitLossRate))
                     .maxDailyProfit(maxDailyProfit)
-                    .maxDailyProfitRate(RoundUtil.roundToFifth(dailyProfitLossRate))
+                    .maxDailyProfitRate(RoundUtil.roundToFifth(maxDailyLossRate))
                     .maxDailyLossRate(RoundUtil.roundToFifth(maxDailyLossRate))
                     .totalProfit(totalProfit)
                     .profitableDays(profitableDays)
@@ -241,7 +241,7 @@ public class DailyAnalysisScheduler {
                 .sum();
 
         // 일간 손익률
-        double dailyProfitLossRate = (previousDailyProfitLossRate != 0)
+        double dailyProfitLossRate = (previousReferencePrice != 0)
                 ? (referencePrice - previousReferencePrice) / previousReferencePrice
                 : 0.0;
 

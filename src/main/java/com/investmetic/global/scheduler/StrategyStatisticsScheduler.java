@@ -77,7 +77,9 @@ public class StrategyStatisticsScheduler {
         int maxConsecutiveLossDays = calculateMaxConsecutiveDays(dailyAnalyses, false);
         int totalTradeDays = dailyAnalyses.size();
         double dailyProfitLossStdDev = calculateStdDev(
-                dailyAnalyses.stream().map(DailyAnalysis::getDailyProfitLossRate).toList()
+                dailyAnalyses.stream()
+                        .map(DailyAnalysis::getDailyProfitLossRate)
+                        .toList()
         );
 
         // 빌더를 이용해 객체 생성
@@ -86,20 +88,20 @@ public class StrategyStatisticsScheduler {
                 .operationPeriod(operationPeriod)
                 .cumulativeTransactionAmount(lastDailyAnalysis.getCumulativeTransactionAmount())
                 .startDate(startDate)
-                .principal(firstDailyAnalysis.getPrincipal())
+                .principal(lastDailyAnalysis.getPrincipal())
                 .endDate(endDate)
                 .daysSincePeakUpdate(lastDailyAnalysis.getDaysSincePeak())
-                .cumulativeProfitAmount(lastDailyAnalysis.getCumulativeProfitLoss())
-                .cumulativeProfitRate(lastDailyAnalysis.getCumulativeProfitLossRate())
-                .recentYearProfitRate(recentYearProfitRate)
+                .cumulativeProfitAmount(lastDailyAnalysis.getCumulativeProfitLoss()) // 누적 수익 금액
+                .cumulativeProfitRate(lastDailyAnalysis.getCumulativeProfitLossRate() * 100) // 누적 수익률
+                .recentYearProfitRate(recentYearProfitRate * 100) //최근 1년 수익률
                 .maxCumulativeProfitAmount(lastDailyAnalysis.getMaxCumulativeProfitLoss())
-                .maxCumulativeProfitRate(lastDailyAnalysis.getMaxCumulativeProfitLossRate())
+                .maxCumulativeProfitRate(lastDailyAnalysis.getMaxCumulativeProfitLossRate() * 100) // 최대 누적 수익률
                 .averageProfitLossAmount(lastDailyAnalysis.getAverageProfitLoss())
-                .averageProfitLossRate(lastDailyAnalysis.getCumulativeProfitLossRate() * 100)
+                .averageProfitLossRate(lastDailyAnalysis.getAverageProfitLossRatio() * 100) // 평균 손익률
                 .maxDailyProfitAmount(lastDailyAnalysis.getMaxDailyProfit())
-                .maxDailyProfitRate(lastDailyAnalysis.getMaxDailyProfitRate())
+                .maxDailyProfitRate(lastDailyAnalysis.getMaxDailyProfitRate() * 100) // 최대 일간 수익률
                 .maxDailyLossAmount(lastDailyAnalysis.getMaxDailyLoss())
-                .maxDailyLossRate(lastDailyAnalysis.getMaxDailyLossRate())
+                .maxDailyLossRate(lastDailyAnalysis.getMaxDailyLossRate() * 100) // 최대 일간 손실률
                 .roa(lastDailyAnalysis.getRoa())
                 .profitFactor(lastDailyAnalysis.getProfitFactor())
                 .currentDrawdown(lastDailyAnalysis.getCurrentDrawdown())
@@ -114,6 +116,7 @@ public class StrategyStatisticsScheduler {
                 .winRate(lastDailyAnalysis.getWinRate() * 100)
                 .totalTradeDays(totalTradeDays)
                 .dailyProfitLossStdDev(dailyProfitLossStdDev)
+                .initialInvestment(firstDailyAnalysis.getPrincipal())
                 .build();
     }
 
