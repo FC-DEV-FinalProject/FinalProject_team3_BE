@@ -230,7 +230,7 @@ public class DailyAnalysisScheduler {
         // 누적입금
         Long cumulativeDeposit = beforeDatas.stream()
                 .mapToLong(DailyAnalysis::getDeposit)
-                .sum();
+                .sum() + deposit;
 
         // 출금
         Long withdrawal = transaction < 0 ? transaction : 0;
@@ -238,7 +238,7 @@ public class DailyAnalysisScheduler {
         // 누적출금
         Long cumulativeWithdrawal = beforeDatas.stream()
                 .mapToLong(DailyAnalysis::getWithdrawal)
-                .sum();
+                .sum() + withdrawal;
 
         // 일간 손익률
         double dailyProfitLossRate = (previousReferencePrice != 0)
@@ -246,32 +246,32 @@ public class DailyAnalysisScheduler {
                 : 0.0;
 
         // 최대 일간 이익
-        Long maxDailyProfit = beforeDatas.stream()
+        Long maxDailyProfit = Math.max(beforeDatas.stream()
                 .mapToLong(DailyAnalysis::getDailyProfitLoss)
                 .filter(profitLoss -> profitLoss > 0)
                 .max()
-                .orElse(0L);
+                .orElse(0L), dailyProfitLoss);
 
         // 최대 일간 이익률
-        double maxDailyProfitRate = beforeDatas.stream()
+        double maxDailyProfitRate = Math.max(beforeDatas.stream()
                 .mapToDouble(DailyAnalysis::getDailyProfitLossRate)
                 .filter(rate -> rate > 0)
                 .max()
-                .orElse(0.0);
+                .orElse(0.0), dailyProfitLossRate);
 
         // 최대 일간 손실
-        long maxDailyLoss = beforeDatas.stream()
+        long maxDailyLoss = Math.min(beforeDatas.stream()
                 .mapToLong(DailyAnalysis::getDailyProfitLoss)
                 .filter(profitLoss -> profitLoss < 0)
                 .min()
-                .orElse(0L);
+                .orElse(0L), dailyProfitLoss);
 
         // 최대 일간 손실률
-        double maxDailyLossRate = beforeDatas.stream()
+        double maxDailyLossRate = Math.min(beforeDatas.stream()
                 .mapToDouble(DailyAnalysis::getDailyProfitLossRate)
                 .filter(rate -> rate < 0)
                 .min()
-                .orElse(0.0);
+                .orElse(0.0), dailyProfitLossRate);
 
         // 총 이익
         long totalProfit = beforeDatas.stream()
@@ -310,11 +310,11 @@ public class DailyAnalysisScheduler {
         double cumulativeProfitLossRate = referencePrice / 1000 - 1;
 
         // 최대 누적 손익
-        long maxCumulativeProfitLoss = beforeDatas.stream()
+        long maxCumulativeProfitLoss = Math.max(beforeDatas.stream()
                 .mapToLong(DailyAnalysis::getCumulativeProfitLoss)
                 .filter(value -> value > 0)
                 .max()
-                .orElse(0L);
+                .orElse(0L), cumulativeProfitLoss);
 
         // 최대 누적 손익률
         double maxCumulativeProfitLossRate = beforeDatas.stream()
@@ -355,11 +355,11 @@ public class DailyAnalysisScheduler {
         double currentDrawdownRate = referencePrice - 1000 > 0 ? (referencePrice - maxReferencePrice) / 100 : 0;
 
         // 최대 자본인하금액
-        Long maxDrawdown = beforeDatas.stream()
+        Long maxDrawdown = Math.min(beforeDatas.stream()
                 .mapToLong(DailyAnalysis::getCurrentDrawdown)
                 .filter(value -> value < 0)
                 .min()
-                .orElse(0L);
+                .orElse(0L), currentDrawdown);
 
         // 최대 자본인하율
         double maxDrawdownRate = beforeDatas.stream()
@@ -372,7 +372,7 @@ public class DailyAnalysisScheduler {
         double winRate = (double) profitableDays / (previousTradingDays + 1);
 
         // profitFactor
-        double profitFactor = totalLoss < 0 ? totalProfit / Math.abs(totalLoss) : 0;
+        double profitFactor = totalLoss < 0 ? (double) totalProfit / Math.abs(totalLoss) : 0;
 
         // roa
         double roa = maxDrawdown != 0
@@ -396,19 +396,6 @@ public class DailyAnalysisScheduler {
                 .orElse(0.0)) / averageProfitLoss * 100
                 : 0.0;
 
-        // sharp 비율
-        double standardDeviation = Math.sqrt(
-                beforeDatas.stream()
-                        .mapToDouble(DailyAnalysis::getDailyProfitLoss)
-                        .map(x -> Math.pow(x - beforeDatas.stream()
-                                .mapToDouble(DailyAnalysis::getDailyProfitLoss)
-                                .average()
-                                .orElse(0.0), 2))
-                        .average()
-                        .orElse(0.0)
-        );
-
-        double sharpRatio = (standardDeviation != 0) ? (double) averageProfitLoss / standardDeviation : 0.0;
 
         Long previousDrawDownPeriod = previousAnalysisOpt.map(DailyAnalysis::getDrawDownPeriod)
                 .orElse(0L);
@@ -425,6 +412,29 @@ public class DailyAnalysisScheduler {
                 .filter(value -> value < 0)
                 .min()
                 .orElse(0.0), currentDrawdownRate);
+        double sharpRatio = 0.0; // 초기값 명시
+        int n = beforeDatas.size();
+
+        if (n > 1) {
+            // 평균 계산
+            double average = beforeDatas.stream()
+                    .mapToDouble(DailyAnalysis::getDailyProfitLoss)
+                    .average()
+                    .orElse(0.0);
+
+            // 표준편차 계산 (표본 기준: n-1)
+            double standardDeviation = Math.sqrt(
+                    beforeDatas.stream()
+                            .mapToDouble(DailyAnalysis::getDailyProfitLoss)
+                            .map(x -> Math.pow(x - average, 2))
+                            .sum() / (n - 1)
+            );
+
+            // 샤프 비율 계산
+            if (standardDeviation != 0) {
+                sharpRatio = averageProfitLoss / standardDeviation;
+            }
+        }
 
         // 9. 새로운 DailyAnalysis 객체 생성 및 반환
         DailyAnalysis dailyAnalysis = DailyAnalysis.builder()
