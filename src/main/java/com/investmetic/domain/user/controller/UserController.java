@@ -6,11 +6,14 @@ import com.investmetic.domain.user.dto.request.UserSignUpDto;
 import com.investmetic.domain.user.dto.response.AvaliableDto;
 import com.investmetic.domain.user.dto.response.FoundEmailDto;
 import com.investmetic.domain.user.dto.response.TraderProfileDto;
+import com.investmetic.domain.user.repository.UserRepository;
 import com.investmetic.domain.user.service.UserMyPageService;
 import com.investmetic.domain.user.service.UserService;
+import com.investmetic.domain.user.service.logic.UserCommonLogic;
 import com.investmetic.global.common.PageResponseDto;
 import com.investmetic.global.exception.BaseResponse;
 import com.investmetic.global.exception.SuccessCode;
+import com.investmetic.global.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -19,7 +22,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,6 +41,9 @@ public class UserController {
 
     private final UserService userService;
     private final UserMyPageService userMyPageService;
+    private final UserCommonLogic userCommonLogic;
+    private final UserRepository userRepository;
+
 
     @Operation(summary = "회원 가입",
             description = "<a href='https://www.notion.so/3b51884e19b2420e8800a18ee92c310c' target='_blank'>API 명세서</a>")
@@ -127,6 +135,16 @@ public class UserController {
             @RequestBody UserModifyDto userModifyDto) {
 
         userMyPageService.resetPassword(userModifyDto, userModifyDto.getEmail());
+        return BaseResponse.success();
+    }
+
+    @Operation(summary = "회원탈퇴",
+            description = "<a href='https://www.notion.so/a3347cba4f5045cab7b7a4d8ad3ca7ec' target='_blank'>API 명세서</a>")
+    @DeleteMapping()
+    public ResponseEntity<BaseResponse<Void>> deleteUser(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+        userService.delete(customUserDetails.getEmail());
         return BaseResponse.success();
     }
 }

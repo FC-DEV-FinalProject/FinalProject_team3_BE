@@ -12,6 +12,7 @@ import com.investmetic.domain.user.dto.response.FoundEmailDto;
 import com.investmetic.domain.user.dto.response.TraderProfileDto;
 import com.investmetic.domain.user.model.entity.User;
 import com.investmetic.domain.user.repository.UserRepository;
+import com.investmetic.domain.user.service.logic.UserCommonLogic;
 import com.investmetic.global.common.PageResponseDto;
 import com.investmetic.global.exception.BusinessException;
 import com.investmetic.global.exception.ErrorCode;
@@ -39,7 +40,7 @@ public class UserService {
     private final RedisUtil redisUtil;
     private final SecureRandom secureRandom = new SecureRandom();
     private final TaskScheduler taskScheduler;
-
+    private final UserCommonLogic userCommonLogic;
 
     //회원 가입
     @Transactional
@@ -267,5 +268,21 @@ public class UserService {
     @FunctionalInterface
     private interface ValidationFunction {
         boolean exists(String value);
+    }
+
+    //회원탈퇴
+    @Transactional
+    public void delete(String email) {
+        // 이메일로 User 엔티티 조회
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException(ErrorCode.USER_INFO_NOT_FOUND));
+        // UserCommonLogic 호출
+        userCommonLogic.deleteUser(user);
+        try {
+            // 회원 삭제
+            userRepository.delete(user);
+        } catch (Exception ex) {
+            throw new BusinessException(ErrorCode.ACCOUNT_DELETION_FAILED);
+        }
     }
 }
